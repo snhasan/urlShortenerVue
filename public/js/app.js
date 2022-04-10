@@ -5416,11 +5416,32 @@ __webpack_require__.r(__webpack_exports__);
 
       if (this.link && this.link !== "") {
         this.error = null;
-        axios.post("/URLShortener", {
-          link: this.link
+        axios.post("https://safebrowsing.googleapis.com/v4/threatMatches:find?key=AIzaSyCyNXpmvlnrdaj7zJTkgk5KMkxu4zpy8Fw", {
+          client: {
+            "clientId": "urlshortener-346716",
+            "clientVersion": "1.5.2"
+          },
+          threatInfo: {
+            "threatTypes": ["UNWANTED_SOFTWARE", "MALWARE"],
+            "platformTypes": ["ANY_PLATFORM"],
+            "threatEntryTypes": ["URL"],
+            "threatEntries": [{
+              "url": this.link
+            }]
+          }
         }).then(function (res) {
-          _this.shorturl = res.data;
-          _this.s_uri = window.location.href + "url/" + _this.shorturl.data.hash;
+          if (!res.data.matches) {
+            axios.post("/URLShortener", {
+              link: _this.link
+            }).then(function (res) {
+              _this.shorturl = res.data;
+              _this.s_uri = window.location.href + "url/" + _this.shorturl.data.hash;
+            })["catch"](function (err) {
+              console.log(err);
+            });
+          } else {
+            _this.error = "URL is not safe";
+          }
         })["catch"](function (err) {
           console.log(err);
         });

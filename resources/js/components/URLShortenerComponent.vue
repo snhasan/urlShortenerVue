@@ -65,15 +65,42 @@ export default {
             if (this.link && this.link !== "") {
                 this.error = null;
                 axios
-                    .post("/URLShortener", {
-                        link: this.link,
+                    .post("https://safebrowsing.googleapis.com/v4/threatMatches:find?key=AIzaSyCyNXpmvlnrdaj7zJTkgk5KMkxu4zpy8Fw", {
+                        client: {
+                            "clientId":      "urlshortener-346716",
+                            "clientVersion": "1.5.2"
+                        },
+                        threatInfo: {
+                            "threatTypes":      ["UNWANTED_SOFTWARE", "MALWARE"],
+                            "platformTypes":    ["ANY_PLATFORM"],
+                            "threatEntryTypes": ["URL"],
+                            "threatEntries": [
+                                {"url": this.link}
+                            ]
+                        }
+
+
                     })
                     .then((res) => {
-                        this.shorturl = res.data;
-                        this.s_uri =
-                            window.location.href +
-                            "url/" +
-                            this.shorturl.data.hash;
+                        if(!res.data.matches){
+                        axios
+                            .post("/URLShortener", {
+                                link: this.link,
+                            })
+                            .then((res) => {
+                                this.shorturl = res.data;
+                                this.s_uri =
+                                    window.location.href +
+                                    "url/" +
+                                    this.shorturl.data.hash;
+                            })
+                            .catch((err) => {
+                                console.log(err);
+                            });
+                        }
+                        else{
+                            this.error = "URL is not safe";
+                        }
                     })
                     .catch((err) => {
                         console.log(err);
